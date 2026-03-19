@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GearForward — Robotics for All</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #F5A800;
+    --yellow-light: #FFD166;
+    --yellow-pale: #FFF8E7;
+    --black: #111111;
+    --white: #FFFFFF;
+    --off-white: #F8F6F2;
+    --gray: #6B6B6B;
+    --gray-light: #E8E5DF;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --nav-h: 68px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--white); color: var(--black); font-family: var(--font-body); overflow-x: hidden; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+    height: var(--nav-h);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5%;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--gray-light);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 0.55rem; text-decoration: none; }
+  .nav-wordmark { font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; letter-spacing: -0.01em; color: var(--black); }
+  .nav-wordmark span { color: var(--yellow); }
+  .nav-right { display: flex; align-items: center; gap: 0; }
+  .nav-links { display: flex; align-items: center; gap: 0.25rem; list-style: none; }
+  .nav-links a {
+    font-size: 0.875rem; font-weight: 500; color: var(--gray);
+    text-decoration: none; padding: 0.45rem 0.9rem; border-radius: 8px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--black); background: var(--off-white); }
+  .nav-actions { display: flex; align-items: center; gap: 0.6rem; margin-left: 1rem; }
+  .btn-donate-nav {
+    background: var(--yellow); color: var(--black);
+    font-family: var(--font-body); font-weight: 700; font-size: 0.85rem;
+    padding: 0.5rem 1.2rem; border-radius: 100px; text-decoration: none;
+    border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    display: inline-flex; align-items: center; gap: 0.35rem;
+  }
+  .btn-donate-nav:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(245,168,0,0.4); }
+  .btn-involved-nav {
+    background: var(--black); color: var(--white);
+    font-family: var(--font-body); font-weight: 600; font-size: 0.85rem;
+    padding: 0.5rem 1.2rem; border-radius: 100px; text-decoration: none;
+    border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-involved-nav:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.25); }
+
+  /* hamburger */
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+  .hamburger span { display: block; width: 24px; height: 2px; background: var(--black); border-radius: 2px; transition: all 0.3s; }
+  .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+  /* mobile menu */
+  .mobile-menu {
+    display: none; position: fixed; top: var(--nav-h); left: 0; right: 0; bottom: 0;
+    background: var(--white); z-index: 299; padding: 2rem 5%;
+    flex-direction: column; gap: 0.5rem; overflow-y: auto;
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a {
+    font-family: var(--font-display); font-weight: 700; font-size: 1.5rem;
+    color: var(--black); text-decoration: none; padding: 0.9rem 0;
+    border-bottom: 1px solid var(--gray-light); letter-spacing: -0.02em;
+    transition: color 0.2s;
+  }
+  .mobile-menu a:hover { color: var(--yellow); }
+  .mobile-menu-actions { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem; }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh; display: flex; align-items: center;
+    padding: calc(var(--nav-h) + 4rem) 5% 5rem;
+    position: relative; overflow: hidden; background: var(--off-white);
+  }
+  .hero-bg-circle {
+    position: absolute; right: -5vw; top: 50%; transform: translateY(-50%);
+    width: clamp(300px, 50vw, 700px); height: clamp(300px, 50vw, 700px);
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--yellow-light) 0%, var(--yellow) 60%);
+    opacity: 0.15; pointer-events: none;
+  }
+  .hero-inner { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr auto; gap: 4rem; align-items: center; width: 100%; }
+  .hero-content { max-width: 580px; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--yellow-pale); border: 1px solid rgba(245,168,0,0.35);
+    padding: 0.4rem 1rem; border-radius: 100px;
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--yellow); font-weight: 500;
+    margin-bottom: 1.75rem; animation: fadeUp 0.5s ease both;
+  }
+  .badge-dot { width: 6px; height: 6px; background: var(--yellow); border-radius: 50%; animation: blink 2s ease infinite; }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.3} }
+  .hero h1 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(2.8rem, 6vw, 5.5rem); line-height: 1.0;
+    letter-spacing: -0.03em; animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .hero h1 .accent { color: var(--yellow); }
+  .hero-sub {
+    margin-top: 1.4rem; font-size: 1.02rem; line-height: 1.8;
+    color: var(--gray); max-width: 480px; font-weight: 300;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+  .hero-stats { display: flex; gap: 2rem; margin-top: 2.2rem; flex-wrap: wrap; animation: fadeUp 0.6s 0.3s ease both; }
+  .h-stat { border-left: 3px solid var(--yellow); padding-left: 1rem; }
+  .h-stat-num { font-family: var(--font-display); font-weight: 800; font-size: 1.8rem; color: var(--black); display: block; line-height: 1; }
+  .h-stat-label { font-size: 0.75rem; color: var(--gray); display: block; margin-top: 0.15rem; }
+  .hero-actions { display: flex; gap: 0.75rem; margin-top: 2.2rem; flex-wrap: wrap; animation: fadeUp 0.6s 0.4s ease both; }
+
+  .hero-card {
+    background: var(--white); border-radius: 24px; padding: 2.2rem 1.8rem;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.1), 0 0 0 1px var(--gray-light);
+    display: flex; flex-direction: column; align-items: center; gap: 1rem; width: 260px;
+    flex-shrink: 0; animation: fadeUp 0.8s 0.3s ease both;
+  }
+  .hero-card-logo { width: 100px; height: 100px; animation: wobble 5s ease-in-out infinite; }
+  @keyframes wobble { 0%,100%{transform:rotate(0deg)}30%{transform:rotate(7deg)}70%{transform:rotate(-7deg)} }
+  .hero-card-title { font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; letter-spacing: -0.02em; }
+  .hero-card-sub { font-size: 0.78rem; color: var(--gray); text-align: center; line-height: 1.55; }
+  .hero-card-tag {
+    background: var(--yellow-pale); color: var(--yellow);
+    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.12em;
+    text-transform: uppercase; padding: 0.3rem 0.85rem; border-radius: 100px; font-weight: 500;
+  }
+
+  /* ── BTNS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    padding: 0.8rem 1.6rem; font-family: var(--font-body); font-weight: 600;
+    font-size: 0.88rem; text-decoration: none; border-radius: 100px;
+    transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border: none;
+    white-space: nowrap;
+  }
+  .btn-yellow { background: var(--yellow); color: var(--black); }
+  .btn-yellow:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,168,0,0.35); }
+  .btn-outline { background: transparent; color: var(--black); border: 1.5px solid var(--gray-light); }
+  .btn-outline:hover { border-color: var(--black); }
+  .btn-dark { background: var(--black); color: var(--white); }
+  .btn-dark:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+  .btn-white { background: var(--white); color: var(--black); }
+  .btn-white:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+  .btn-sm { padding: 0.55rem 1.1rem; font-size: 0.8rem; }
+
+  /* ── TICKER ── */
+  .ticker-wrap { overflow: hidden; background: var(--yellow); padding: 0.8rem 0; }
+  .ticker { display: flex; animation: ticker 30s linear infinite; width: max-content; }
+  .ticker-item {
+    font-family: var(--font-display); font-size: 0.88rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--black);
+    white-space: nowrap; padding: 0 2rem; display: flex; align-items: center; gap: 1.5rem;
+  }
+  .ticker-item::after { content: '◆'; font-size: 0.42rem; opacity: 0.4; }
+  @keyframes ticker { 0%{transform:translateX(0)}100%{transform:translateX(-50%)} }
+
+  /* ── SECTIONS ── */
+  .section { padding: 6rem 5%; }
+  .section-sm { padding: 4rem 5%; }
+  .section-eyebrow {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--yellow); font-weight: 500;
+    display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.9rem;
+  }
+  .section-eyebrow::before { content: ''; width: 18px; height: 2px; background: var(--yellow); display: inline-block; }
+  .section-eyebrow.center { justify-content: center; }
+  .section-title {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(2rem, 3.8vw, 3.4rem); letter-spacing: -0.03em; line-height: 1.05;
+  }
+  .section-title.center { text-align: center; }
+  .text-yellow { color: var(--yellow); }
+  .text-white { color: var(--white); }
+
+  /* ── MISSION ── */
+  .mission-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+  .mission-body p { margin-top: 1.4rem; font-size: 1rem; line-height: 1.8; color: var(--gray); }
+  .mission-quote {
+    margin-top: 2rem; padding: 1.4rem 1.6rem; background: var(--yellow-pale);
+    border-left: 4px solid var(--yellow); font-style: italic;
+    color: var(--black); line-height: 1.7; border-radius: 0 8px 8px 0; font-size: 0.98rem;
+  }
+  .goals-list { display: flex; flex-direction: column; gap: 1rem; }
+  .goal-item {
+    display: flex; gap: 1rem; align-items: flex-start;
+    padding: 1.2rem 1.3rem; border-radius: 14px; background: var(--off-white);
+    border: 1px solid transparent; transition: border-color 0.3s, transform 0.3s;
+  }
+  .goal-item:hover { border-color: var(--yellow); transform: translateX(4px); }
+  .goal-icon { width: 40px; height: 40px; min-width: 40px; background: var(--yellow); border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; }
+  .goal-item h3 { font-family: var(--font-display); font-weight: 700; font-size: 0.92rem; margin-bottom: 0.2rem; }
+  .goal-item p { font-size: 0.8rem; color: var(--gray); line-height: 1.6; }
+
+  /* ── STATS ── */
+  .stats-bar { background: var(--black); }
+  .stats-inner { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .stat-block { padding: 3rem 2.5rem; border-right: 1px solid rgba(255,255,255,0.07); transition: background 0.3s; }
+  .stat-block:last-child { border-right: none; }
+  .stat-block:hover { background: rgba(245,168,0,0.06); }
+  .stat-num { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.8rem, 4vw, 3.6rem); color: var(--yellow); line-height: 1; display: block; }
+  .stat-desc { margin-top: 0.5rem; font-size: 0.83rem; color: rgba(255,255,255,0.45); line-height: 1.55; }
+
+  /* ── EVENTS PAGE ── */
+  .events-hero {
+    background: var(--black); padding: calc(var(--nav-h) + 4rem) 5% 5rem;
+    position: relative; overflow: hidden;
+  }
+  .events-hero::after {
+    content: 'EVENTS'; position: absolute; font-family: var(--font-display); font-weight: 800;
+    font-size: 20vw; color: rgba(255,255,255,0.025); bottom: -2vw; right: -1vw;
+    letter-spacing: -0.04em; pointer-events: none; white-space: nowrap;
+  }
+  .events-hero .section-eyebrow { color: var(--yellow); }
+  .events-hero .section-eyebrow::before { background: var(--yellow); }
+  .events-header { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem; }
+  .events-hero-sub { margin-top: 1rem; color: rgba(255,255,255,0.5); font-size: 1rem; max-width: 480px; line-height: 1.7; }
+
+  .events-list { padding: 5rem 5%; background: var(--off-white); }
+  .events-list-inner { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .event-card {
+    background: var(--white); border-radius: 20px; overflow: hidden;
+    border: 1px solid var(--gray-light); display: grid; grid-template-columns: 180px 1fr;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .event-card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
+  .event-date-block {
+    background: var(--yellow); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 2rem 1.5rem; text-align: center;
+    flex-shrink: 0;
+  }
+  .event-month { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(0,0,0,0.55); font-weight: 500; }
+  .event-day { font-family: var(--font-display); font-weight: 800; font-size: 3rem; color: var(--black); line-height: 1; }
+  .event-year { font-family: var(--font-mono); font-size: 0.68rem; color: rgba(0,0,0,0.45); margin-top: 0.2rem; }
+  .event-body { padding: 2rem 2.2rem; display: flex; flex-direction: column; justify-content: center; gap: 0.5rem; }
+  .event-tag { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--yellow); background: var(--yellow-pale); padding: 0.25rem 0.7rem; border-radius: 100px; font-weight: 500; width: fit-content; }
+  .event-title { font-family: var(--font-display); font-weight: 800; font-size: 1.35rem; letter-spacing: -0.02em; line-height: 1.2; }
+  .event-desc { font-size: 0.87rem; color: var(--gray); line-height: 1.7; margin-top: 0.2rem; }
+  .event-meta { display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem; flex-wrap: wrap; }
+  .event-meta span { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray); display: flex; align-items: center; gap: 0.35rem; }
+
+  /* ── CHAPTERS PAGE ── */
+  .chapters-hero {
+    background: var(--off-white); padding: calc(var(--nav-h) + 4rem) 5% 4rem;
+    position: relative; overflow: hidden;
+  }
+  .chapters-hero::after {
+    content: 'CHAPTERS'; position: absolute; font-family: var(--font-display); font-weight: 800;
+    font-size: 16vw; color: rgba(0,0,0,0.04); bottom: -1vw; right: -1vw;
+    letter-spacing: -0.04em; pointer-events: none; white-space: nowrap;
+  }
+  .chapters-section { padding: 4rem 5% 6rem; background: var(--white); }
+  .chapters-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+  .chapter-card {
+    background: var(--off-white); border-radius: 20px; padding: 2.2rem;
+    border: 2px solid transparent; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .chapter-card:hover { border-color: var(--yellow); transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.07); }
+  .chapter-icon { width: 52px; height: 52px; background: var(--yellow); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+  .chapter-card h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; letter-spacing: -0.02em; }
+  .chapter-school { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--yellow); font-weight: 500; }
+  .chapter-card p { font-size: 0.84rem; color: var(--gray); line-height: 1.7; flex-grow: 1; }
+  .chapter-detail { font-size: 0.78rem; color: var(--gray); display: flex; align-items: flex-start; gap: 0.4rem; }
+  .chapter-detail::before { content: '📅'; flex-shrink: 0; }
+  .chapter-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.5rem; }
+
+  /* ── TEAM (home) ── */
+  .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; margin-top: 3rem; }
+  .team-card {
+    background: var(--off-white); border-radius: 18px; padding: 1.8rem 1.5rem;
+    border: 1.5px solid transparent; transition: border-color 0.3s, transform 0.3s;
+  }
+  .team-card:hover { border-color: var(--yellow); transform: translateY(-3px); }
+  .team-avatar {
+    width: 62px; height: 62px; border-radius: 50%; background: var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; color: var(--black);
+    margin-bottom: 0.9rem; transition: transform 0.3s;
+  }
+  .team-card:hover .team-avatar { transform: scale(1.08); }
+  .team-card h4 { font-family: var(--font-display); font-weight: 700; font-size: 0.98rem; margin-bottom: 0.2rem; }
+  .team-role { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--yellow); font-weight: 500; display: block; margin-bottom: 0.7rem; }
+  .team-bio { font-size: 0.78rem; color: var(--gray); line-height: 1.65; }
+
+  /* ── DONATE MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    z-index: 500; align-items: center; justify-content: center; padding: 1rem;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white); border-radius: 24px; padding: 2.5rem;
+    max-width: 460px; width: 100%; position: relative;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.2);
+    animation: modalIn 0.3s ease;
+  }
+  @keyframes modalIn { from{opacity:0;transform:scale(0.92)}to{opacity:1;transform:scale(1)} }
+  .modal-close {
+    position: absolute; top: 1.2rem; right: 1.2rem;
+    background: var(--off-white); border: none; border-radius: 50%; width: 32px; height: 32px;
+    cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .modal-close:hover { background: var(--gray-light); }
+  .modal-logo { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .modal h2 { font-family: var(--font-display); font-weight: 800; font-size: 1.8rem; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .modal p { font-size: 0.88rem; color: var(--gray); line-height: 1.65; margin-bottom: 1.5rem; }
+  .amount-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin-bottom: 1.2rem; }
+  .amount-btn {
+    border: 1.5px solid var(--gray-light); background: var(--off-white); border-radius: 10px;
+    padding: 0.7rem 0.5rem; font-family: var(--font-display); font-weight: 700;
+    font-size: 1rem; cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .amount-btn:hover { border-color: var(--yellow); background: var(--yellow-pale); }
+  .amount-btn.selected { border-color: var(--yellow); background: var(--yellow); color: var(--black); }
+  .custom-amount {
+    width: 100%; border: 1.5px solid var(--gray-light); border-radius: 10px;
+    padding: 0.8rem 1rem; font-family: var(--font-body); font-size: 1rem;
+    margin-bottom: 1.2rem; outline: none; transition: border-color 0.2s;
+  }
+  .custom-amount:focus { border-color: var(--yellow); }
+  .modal-submit {
+    width: 100%; background: var(--yellow); color: var(--black);
+    border: none; border-radius: 100px; padding: 1rem;
+    font-family: var(--font-display); font-weight: 800; font-size: 1.05rem;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; letter-spacing: -0.01em;
+  }
+  .modal-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,168,0,0.4); }
+  .modal-note { text-align: center; font-family: var(--font-mono); font-size: 0.63rem; color: var(--gray); margin-top: 0.8rem; letter-spacing: 0.05em; }
+
+  /* ── INVOLVED / CTA ── */
+  .cta-section { background: var(--yellow); padding: 7rem 5%; text-align: center; position: relative; overflow: hidden; }
+  .cta-section::before {
+    content: 'JOIN US'; position: absolute; font-family: var(--font-display); font-weight: 800;
+    font-size: 18vw; color: rgba(0,0,0,0.04); top: 50%; left: 50%;
+    transform: translate(-50%, -50%); white-space: nowrap; pointer-events: none; letter-spacing: -0.04em;
+  }
+  .cta-section .section-eyebrow { color: rgba(0,0,0,0.4); justify-content: center; }
+  .cta-section .section-eyebrow::before { background: rgba(0,0,0,0.3); }
+  .cta-sub { max-width: 460px; margin: 1rem auto 2.2rem; color: rgba(0,0,0,0.6); font-size: 1rem; line-height: 1.75; }
+  .cta-actions { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--black); color: var(--white);
+    padding: 2.2rem 5%; display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1.2rem;
+  }
+  .footer-brand { display: flex; align-items: center; gap: 0.55rem; }
+  .footer-wordmark { font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; color: var(--white); }
+  .footer-wordmark span { color: var(--yellow); }
+  .footer-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .footer-links a { font-size: 0.8rem; color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--yellow); }
+  .footer-copy { font-family: var(--font-mono); font-size: 0.62rem; color: rgba(255,255,255,0.22); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-d1 { transition-delay: 0.1s; }
+  .reveal-d2 { transition-delay: 0.2s; }
+  .reveal-d3 { transition-delay: 0.3s; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1024px) {
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero-card { display: none; }
+    .mission-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .chapters-grid { grid-template-columns: 1fr 1fr; }
+    .team-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    :root { --nav-h: 62px; }
+    .nav-links, .nav-actions { display: none; }
+    .hamburger { display: flex; }
+    .stats-inner { grid-template-columns: 1fr 1fr; }
+    .stat-block:nth-child(2) { border-right: none; }
+    .stat-block:nth-child(3) { border-top: 1px solid rgba(255,255,255,0.07); }
+    .event-card { grid-template-columns: 1fr; }
+    .event-date-block { flex-direction: row; justify-content: flex-start; gap: 1rem; padding: 1.2rem 1.5rem; }
+    .event-day { font-size: 2rem; }
+    .chapters-grid { grid-template-columns: 1fr; }
+    .team-grid { grid-template-columns: 1fr 1fr; }
+    .amount-grid { grid-template-columns: repeat(2, 1fr); }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+    .footer-links { justify-content: center; }
+  }
+  @media (max-width: 500px) {
+    .team-grid { grid-template-columns: 1fr; }
+    .stats-inner { grid-template-columns: 1fr; }
+    .stat-block { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .hero-stats { gap: 1.2rem; }
+    .hero-actions { flex-direction: column; }
+    .hero-actions .btn { width: 100%; justify-content: center; }
+  }
+
+  /* ── TESTIMONIALS ── */
+  .testimonials-hero {
+    background: var(--black); padding: calc(var(--nav-h) + 4rem) 5% 5rem;
+    position: relative; overflow: hidden;
+  }
+  .testimonials-hero::after {
+    content: '❝'; position: absolute; font-size: 40vw; color: rgba(245,168,0,0.04);
+    bottom: -8vw; right: -2vw; pointer-events: none; line-height: 1;
+    font-family: Georgia, serif;
+  }
+  .testimonials-hero .section-eyebrow { color: var(--yellow); }
+  .testimonials-hero .section-eyebrow::before { background: var(--yellow); }
+
+  /* featured quote */
+  .t-featured {
+    background: var(--yellow); border-radius: 24px; padding: 3rem;
+    margin: 4rem 5% 0; position: relative; overflow: hidden;
+  }
+  .t-featured::before {
+    content: '❝'; font-family: Georgia, serif; font-size: 8rem;
+    color: rgba(0,0,0,0.08); position: absolute; top: -1rem; left: 1.5rem;
+    line-height: 1; pointer-events: none;
+  }
+  .t-featured-text {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(1.3rem, 2.5vw, 2rem); line-height: 1.35;
+    letter-spacing: -0.02em; color: var(--black); position: relative; z-index: 1;
+    max-width: 780px;
+  }
+  .t-featured-author { margin-top: 1.5rem; display: flex; align-items: center; gap: 1rem; position: relative; z-index: 1; }
+  .t-featured-avatar {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--black);
+    color: var(--yellow); font-family: var(--font-display); font-weight: 800;
+    font-size: 1rem; display: flex; align-items: center; justify-content: center;
+  }
+  .t-featured-name { font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: var(--black); }
+  .t-featured-role { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(0,0,0,0.5); margin-top: 0.15rem; }
+
+  /* grid cards */
+  .t-section { padding: 5rem 5% 6rem; background: var(--off-white); }
+  .t-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; margin-top: 3rem; }
+  .t-card {
+    background: var(--white); border-radius: 20px; padding: 2rem;
+    border: 1.5px solid var(--gray-light); display: flex; flex-direction: column;
+    gap: 1rem; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  }
+  .t-card:hover { border-color: var(--yellow); transform: translateY(-4px); box-shadow: 0 16px 36px rgba(0,0,0,0.07); }
+  .t-stars { display: flex; gap: 0.2rem; }
+  .t-star { color: var(--yellow); font-size: 0.9rem; }
+  .t-quote-mark { font-family: Georgia, serif; font-size: 3rem; color: var(--yellow); line-height: 0.8; opacity: 0.5; }
+  .t-text { font-size: 0.9rem; color: var(--black); line-height: 1.75; flex-grow: 1; font-style: italic; }
+  .t-author { display: flex; align-items: center; gap: 0.85rem; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--gray-light); }
+  .t-avatar {
+    width: 42px; height: 42px; min-width: 42px; border-radius: 50%; background: var(--yellow);
+    color: var(--black); font-family: var(--font-display); font-weight: 800;
+    font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
+  }
+  .t-name { font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; }
+  .t-role { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--yellow); margin-top: 0.1rem; }
+  .t-tag { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); }
+
+  /* share form */
+  .t-share-section { background: var(--white); padding: 5rem 5%; }
+  .t-share-inner { max-width: 640px; margin: 0 auto; text-align: center; }
+  .t-share-inner .section-eyebrow { justify-content: center; }
+  .t-form { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; text-align: left; }
+  .t-form input, .t-form textarea, .t-form select {
+    width: 100%; border: 1.5px solid var(--gray-light); border-radius: 12px;
+    padding: 0.85rem 1rem; font-family: var(--font-body); font-size: 0.9rem;
+    background: var(--off-white); outline: none; transition: border-color 0.2s; color: var(--black);
+  }
+  .t-form input:focus, .t-form textarea:focus, .t-form select:focus { border-color: var(--yellow); background: var(--white); }
+  .t-form textarea { min-height: 120px; resize: vertical; }
+  .t-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .t-form label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); display: block; margin-bottom: 0.4rem; }
+  .t-form-submit {
+    width: 100%; background: var(--yellow); color: var(--black);
+    border: none; border-radius: 100px; padding: 1rem;
+    font-family: var(--font-display); font-weight: 800; font-size: 1rem;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; letter-spacing: -0.01em;
+  }
+  .t-form-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,168,0,0.4); }
+  .t-success { display: none; background: var(--yellow-pale); border: 1.5px solid rgba(245,168,0,0.3); border-radius: 14px; padding: 1.5rem; text-align: center; }
+  .t-success.show { display: block; }
+  .t-success-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .t-success h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; margin-bottom: 0.3rem; }
+  .t-success p { font-size: 0.85rem; color: var(--gray); }
+
+  @media (max-width: 900px) { .t-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) {
+    .t-grid { grid-template-columns: 1fr; }
+    .t-form-row { grid-template-columns: 1fr; }
+    .t-featured { padding: 2rem; }
+    .t-featured-text { font-size: 1.2rem; }
+  }
+
+  /* ── MISSION PAGE ── */
+  .mission-page-hero {
+    background: var(--yellow); padding: calc(var(--nav-h) + 4rem) 5% 5rem;
+    position: relative; overflow: hidden;
+  }
+  .mission-page-hero::after {
+    content: 'MISSION'; position: absolute; font-family: var(--font-display); font-weight: 800;
+    font-size: 18vw; color: rgba(0,0,0,0.05); bottom: -2vw; right: -1vw;
+    letter-spacing: -0.04em; pointer-events: none; white-space: nowrap;
+  }
+  .mission-page-hero .section-eyebrow { color: rgba(0,0,0,0.45); }
+  .mission-page-hero .section-eyebrow::before { background: rgba(0,0,0,0.3); }
+
+  .mission-statement-section { background: var(--white); padding: 6rem 5%; }
+  .mission-statement-inner { max-width: 820px; margin: 0 auto; }
+  .mission-statement-inner .section-eyebrow { margin-bottom: 1.5rem; }
+  .mission-para {
+    font-size: 1.08rem; line-height: 1.9; color: var(--black);
+    margin-bottom: 1.8rem; padding-left: 1.5rem;
+    border-left: 3px solid transparent; transition: border-color 0.3s;
+  }
+  .mission-para:hover { border-left-color: var(--yellow); }
+  .mission-para:last-child { margin-bottom: 0; }
+  .mission-pull {
+    background: var(--yellow); border-radius: 20px; padding: 2.5rem 3rem;
+    margin: 3rem 0; position: relative; overflow: hidden;
+  }
+  .mission-pull::before {
+    content: '❝'; font-family: Georgia, serif; font-size: 7rem;
+    color: rgba(0,0,0,0.07); position: absolute; top: -1rem; left: 1rem;
+    line-height: 1; pointer-events: none;
+  }
+  .mission-pull p {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(1.1rem, 2.2vw, 1.6rem); line-height: 1.4;
+    letter-spacing: -0.02em; color: var(--black); position: relative; z-index: 1;
+  }
+
+  .mission-values { background: var(--off-white); padding: 6rem 5%; }
+  .values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+  .value-card {
+    background: var(--white); border-radius: 20px; padding: 2.2rem;
+    border: 1.5px solid var(--gray-light); transition: border-color 0.3s, transform 0.3s;
+  }
+  .value-card:hover { border-color: var(--yellow); transform: translateY(-4px); }
+  .value-num { font-family: var(--font-display); font-weight: 800; font-size: 3rem; color: var(--yellow); opacity: 0.4; line-height: 1; margin-bottom: 1rem; }
+  .value-card h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em; margin-bottom: 0.6rem; }
+  .value-card p { font-size: 0.85rem; color: var(--gray); line-height: 1.7; }
+  @media (max-width: 768px) { .values-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 500px) { .values-grid { grid-template-columns: 1fr; } }
+
+  /* ── TEAM PAGE ── */
+  .team-page-hero {
+    background: var(--off-white); padding: calc(var(--nav-h) + 4rem) 5% 4rem;
+    position: relative; overflow: hidden;
+  }
+  .team-page-hero::after {
+    content: 'TEAM'; position: absolute; font-family: var(--font-display); font-weight: 800;
+    font-size: 22vw; color: rgba(0,0,0,0.04); bottom: -3vw; right: -1vw;
+    letter-spacing: -0.04em; pointer-events: none; white-space: nowrap;
+  }
+  .team-page-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+  .team-page-card {
+    background: var(--white); border-radius: 20px; padding: 2.2rem;
+    border: 1.5px solid var(--gray-light); transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    display: flex; flex-direction: column; gap: 0.8rem;
+  }
+  .team-page-card:hover { border-color: var(--yellow); transform: translateY(-4px); box-shadow: 0 16px 36px rgba(0,0,0,0.07); }
+  .team-page-avatar {
+    width: 70px; height: 70px; border-radius: 50%; background: var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; color: var(--black);
+    transition: transform 0.3s;
+  }
+  .team-page-card:hover .team-page-avatar { transform: scale(1.08); }
+  .team-page-card h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em; margin-top: 0.3rem; }
+  .team-page-role { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--yellow); font-weight: 500; }
+  .team-page-bio { font-size: 0.83rem; color: var(--gray); line-height: 1.7; }
+  @media (max-width: 900px) { .team-page-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 500px) { .team-page-grid { grid-template-columns: 1fr; } }
+
+  /* ── CONTACT PAGE ── */
+  .contact-hero {
+    background: var(--black); padding: calc(var(--nav-h) + 4rem) 5% 5rem;
+    position: relative; overflow: hidden;
+  }
+  .contact-hero::after {
+    content: 'CONTACT'; position: absolute; font-family: var(--font-display); font-weight: 800;
+    font-size: 14vw; color: rgba(255,255,255,0.025); bottom: -1vw; right: -1vw;
+    letter-spacing: -0.04em; pointer-events: none; white-space: nowrap;
+  }
+  .contact-hero .section-eyebrow { color: var(--yellow); }
+  .contact-hero .section-eyebrow::before { background: var(--yellow); }
+
+  .contact-body { padding: 5rem 5%; background: var(--off-white); }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+  .contact-info { display: flex; flex-direction: column; gap: 1.5rem; }
+  .contact-info-item {
+    background: var(--white); border-radius: 16px; padding: 1.6rem 1.8rem;
+    border: 1.5px solid var(--gray-light); display: flex; align-items: flex-start; gap: 1rem;
+    transition: border-color 0.3s;
+  }
+  .contact-info-item:hover { border-color: var(--yellow); }
+  .contact-info-icon { width: 42px; height: 42px; min-width: 42px; background: var(--yellow); border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+  .contact-info-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.3rem; font-weight: 500; }
+  .contact-info-value { font-family: var(--font-display); font-weight: 700; font-size: 0.98rem; color: var(--black); }
+  .contact-info-value a { color: var(--black); text-decoration: none; transition: color 0.2s; }
+  .contact-info-value a:hover { color: var(--yellow); }
+
+  .contact-form { background: var(--white); border-radius: 20px; padding: 2.5rem; border: 1.5px solid var(--gray-light); }
+  .contact-form h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em; margin-bottom: 0.4rem; }
+  .contact-form .form-sub { font-size: 0.85rem; color: var(--gray); margin-bottom: 1.8rem; line-height: 1.6; }
+  .cf-field { margin-bottom: 1.1rem; }
+  .cf-label { font-family: var(--font-mono); font-size: 0.61rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); display: block; margin-bottom: 0.4rem; font-weight: 500; }
+  .cf-input, .cf-textarea, .cf-select {
+    width: 100%; border: 1.5px solid var(--gray-light); border-radius: 11px;
+    padding: 0.8rem 1rem; font-family: var(--font-body); font-size: 0.88rem;
+    background: var(--off-white); outline: none; transition: border-color 0.2s, background 0.2s; color: var(--black);
+  }
+  .cf-input:focus, .cf-textarea:focus, .cf-select:focus { border-color: var(--yellow); background: var(--white); }
+  .cf-textarea { min-height: 130px; resize: vertical; }
+  .cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .cf-submit {
+    width: 100%; background: var(--yellow); color: var(--black);
+    border: none; border-radius: 100px; padding: 0.95rem;
+    font-family: var(--font-display); font-weight: 800; font-size: 1rem;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; letter-spacing: -0.01em; margin-top: 0.5rem;
+  }
+  .cf-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,168,0,0.4); }
+  .cf-success { display: none; background: var(--yellow-pale); border: 1.5px solid rgba(245,168,0,0.3); border-radius: 14px; padding: 2rem; text-align: center; }
+  .cf-success.show { display: block; }
+  .cf-success-icon { font-size: 2.2rem; margin-bottom: 0.6rem; }
+  .cf-success h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; margin-bottom: 0.3rem; }
+  .cf-success p { font-size: 0.85rem; color: var(--gray); }
+  @media (max-width: 768px) {
+    .contact-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .cf-row { grid-template-columns: 1fr; }
+  }</style>
+</head>
+<body>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav>
+  <a href="#" class="nav-logo" data-action="page" data-arg="home">
+    <img src="data:image/jpeg;base64,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" width="34" height="34" alt="GearForward logo" style="object-fit:contain;">
+    <span class="nav-wordmark">GEAR<span>FORWARD</span></span>
+  </a>
+  <div class="nav-right">
+    <ul class="nav-links">
+      <li><a href="#" data-action="page" data-arg="home" data-page="home" class="active">Home</a></li>
+      <li><a href="#" data-action="page" data-arg="team" data-page="team">Team</a></li>
+      <li><a href="#" data-action="page" data-arg="mission" data-page="mission">Mission</a></li>
+      <li><a href="#" data-action="page" data-arg="events" data-page="events">Events</a></li>
+      <li><a href="#" data-action="page" data-arg="chapters" data-page="chapters">Chapters</a></li>
+      <li><a href="#" data-action="page" data-arg="testimonials" data-page="testimonials">Testimonials</a></li>
+      <li><a href="#" data-action="page" data-arg="contact" data-page="contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn-donate-nav" data-action="donate">♥ Donate</button>
+      <a href="#" class="btn-involved-nav" data-action="page" data-arg="chapters">Get Involved</a>
+    </div>
+  </div>
+  <button class="hamburger" id="hamburger" data-action="menu" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#" data-action="page-menu" data-arg="home">Home</a>
+  <a href="#" data-action="page-menu" data-arg="team">Team</a>
+  <a href="#" data-action="page-menu" data-arg="mission">Mission</a>
+  <a href="#" data-action="page-menu" data-arg="events">Events</a>
+  <a href="#" data-action="page-menu" data-arg="chapters">Chapters</a>
+  <a href="#" data-action="page-menu" data-arg="testimonials">Testimonials</a>
+  <a href="#" data-action="page-menu" data-arg="contact">Contact</a>
+  <div class="mobile-menu-actions">
+    <button class="btn btn-yellow" style="width:100%;justify-content:center;" data-action="donate-menu">♥ Donate</button>
+    <a href="#" class="btn btn-dark" style="width:100%;justify-content:center;text-align:center;" data-action="page-menu" data-arg="chapters">Get Involved</a>
+  </div>
+</div>
+
+<!-- ═══════════════ DONATE MODAL ═══════════════ -->
+<div class="modal-overlay" id="donateModal" data-action="modal-outside">
+  <div class="modal">
+    <button class="modal-close" data-action="close-donate">✕</button>
+    <div class="modal-logo">
+      <img src="data:image/jpeg;base64,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" width="28" height="28" alt="GearForward logo" style="object-fit:contain;">
+      <span style="font-family:var(--font-display);font-weight:800;font-size:1rem;">GEAR<span style="color:var(--yellow)">FORWARD</span></span>
+    </div>
+    <h2>Support Our Mission</h2>
+    <p>Every dollar goes directly toward free robotics programs, equipment, and competition access for Oregon youth. 100% of donations fund student experiences.</p>
+    <div class="amount-grid">
+      <button class="amount-btn" data-action="amount">$10</button>
+      <button class="amount-btn selected" data-action="amount">$25</button>
+      <button class="amount-btn" data-action="amount">$50</button>
+      <button class="amount-btn" data-action="amount">$100</button>
+    </div>
+    <input class="custom-amount" type="number" placeholder="Or enter a custom amount ($)" id="customAmount" data-action="custom-amount"/>
+    <button class="modal-submit" data-action="donate-submit">Donate Now →</button>
+    <p class="modal-note">GearForward is a 501(c)(3) nonprofit · Donations may be tax-deductible</p>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE: HOME ═══════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg-circle"></div>
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-badge"><span class="badge-dot"></span>Portland/Bethany, Oregon · 501(c)(3)</div>
+        <h1>Gear Up.<br><span class="accent">Build Forward.</span></h1>
+        <p class="hero-sub">GearForward is a youth-led nonprofit bringing STEM and robotics education to underrepresented communities across Oregon — at zero cost to students.</p>
+        <div class="hero-stats">
+          <div class="h-stat"><span class="h-stat-num">$15K+</span><span class="h-stat-label">Raised</span></div>
+          <div class="h-stat"><span class="h-stat-num">4</span><span class="h-stat-label">Chapters</span></div>
+          <div class="h-stat"><span class="h-stat-num">$0</span><span class="h-stat-label">Cost to Students</span></div>
+        </div>
+        <div class="hero-actions">
+          <a href="#" class="btn btn-yellow" data-action="page" data-arg="chapters">Get Involved →</a>
+          <a href="#" class="btn btn-outline" data-action="page" data-arg="events">See Our Events</a>
+          <button class="btn btn-outline" data-action="donate">♥ Donate</button>
+        </div>
+      </div>
+      <div class="hero-card">
+        <img src="data:image/jpeg;base64,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" width="110" height="110" alt="GearForward logo" style="object-fit:contain;" class="hero-card-logo">
+        <div class="hero-card-title">GearForward</div>
+        <div class="hero-card-sub">Youth-led robotics &amp; STEM<br>nonprofit · Portland, OR</div>
+        <div class="hero-card-tag">501(c)(3) Nonprofit</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span class="ticker-item">STEM Education</span>
+      <span class="ticker-item">Robotics</span>
+      <span class="ticker-item">Youth Empowerment</span>
+      <span class="ticker-item">4 Oregon Chapters</span>
+      <span class="ticker-item">FTC Teams</span>
+      <span class="ticker-item">Free Programs</span>
+      <span class="ticker-item">Westview High School</span>
+      <span class="ticker-item">Community Impact</span>
+      <span class="ticker-item">STEM Education</span>
+      <span class="ticker-item">Robotics</span>
+      <span class="ticker-item">Youth Empowerment</span>
+      <span class="ticker-item">4 Oregon Chapters</span>
+      <span class="ticker-item">FTC Teams</span>
+      <span class="ticker-item">Free Programs</span>
+      <span class="ticker-item">Westview High School</span>
+      <span class="ticker-item">Community Impact</span>
+    </div>
+  </div>
+
+  <!-- MISSION -->
+  <section class="section" style="background:var(--white)">
+    <div class="mission-grid">
+      <div class="reveal">
+        <div class="section-eyebrow">Our Mission</div>
+        <h2 class="section-title">STEM for<br>Everyone.</h2>
+        <p class="mission-body" style="margin-top:1.4rem;font-size:1rem;line-height:1.8;color:var(--gray)">We aim to bring STEM opportunities to underrepresented communities and empower young children with a vision for their future in science, technology, engineering, and math.</p>
+        <div class="mission-quote">"A 501(c)(3) not-for-profit founded in the Portland/Bethany area, with the goal of educating youth in STEM and robotics."</div>
+      </div>
+      <div class="goals-list reveal reveal-d1">
+        <div class="goal-item">
+          <div class="goal-icon">🎯</div>
+          <div><h3>Reach Underrepresented Youth</h3><p>We focus on communities that have historically lacked STEM access, removing every financial barrier.</p></div>
+        </div>
+        <div class="goal-item">
+          <div class="goal-icon">🤖</div>
+          <div><h3>Hands-On Robotics</h3><p>Students build and program real hardware — from FLL robots to FTC competition bots.</p></div>
+        </div>
+        <div class="goal-item">
+          <div class="goal-icon">🌱</div>
+          <div><h3>Inspire Future Innovators</h3><p>We help kids see themselves as engineers and scientists, planting seeds for careers that change the world.</p></div>
+        </div>
+        <div class="goal-item">
+          <div class="goal-icon">📍</div>
+          <div><h3>Grow Across Oregon</h3><p>Our chapter model lets us scale impact statewide, meeting students at high schools and community centers.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-bar section-sm">
+    <div class="stats-inner">
+      <div class="stat-block reveal"><span class="stat-num">$15K+</span><p class="stat-desc">Raised to fund free programs, kits, and competition entry for Oregon youth.</p></div>
+      <div class="stat-block reveal reveal-d1"><span class="stat-num">4</span><p class="stat-desc">Active chapters across Oregon at high schools and community locations.</p></div>
+      <div class="stat-block reveal reveal-d2"><span class="stat-num">$0</span><p class="stat-desc">Cost to every student we serve. No fees, no gear to buy — just show up.</p></div>
+    </div>
+  </div>
+
+  <!-- RECENT EVENTS PREVIEW -->
+  <section class="section" style="background:var(--off-white)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:2.5rem;" class="reveal">
+      <div>
+        <div class="section-eyebrow">Recent Events</div>
+        <h2 class="section-title">What We've<br>Been Up To</h2>
+      </div>
+      <a href="#" class="btn btn-yellow btn-sm" data-action="page" data-arg="events">All Events →</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem;">
+      <div class="reveal" style="background:var(--white);border-radius:18px;padding:1.8rem;border:1px solid var(--gray-light);">
+        <div style="font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:0.7rem;">Jul – Aug 2025</div>
+        <h3 style="font-family:var(--font-display);font-weight:800;font-size:1.1rem;margin-bottom:0.6rem;letter-spacing:-0.02em;">Summer Robotics Camp</h3>
+        <p style="font-size:0.83rem;color:var(--gray);line-height:1.65;">4-session free camp at Brookwood Library — coding, CAD, and real FLL competition robots.</p>
+      </div>
+      <div class="reveal reveal-d1" style="background:var(--white);border-radius:18px;padding:1.8rem;border:1px solid var(--gray-light);">
+        <div style="font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:0.7rem;">Mar 2025</div>
+        <h3 style="font-family:var(--font-display);font-weight:800;font-size:1.1rem;margin-bottom:0.6rem;letter-spacing:-0.02em;">Portland Holi Festival</h3>
+        <p style="font-size:0.83rem;color:var(--gray);line-height:1.65;">Informational booth where festival-goers operated a real FTC competition robot.</p>
+      </div>
+      <div class="reveal reveal-d2" style="background:var(--white);border-radius:18px;padding:1.8rem;border:1px solid var(--gray-light);">
+        <div style="font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:0.7rem;">Dec 2024</div>
+        <h3 style="font-family:var(--font-display);font-weight:800;font-size:1.1rem;margin-bottom:0.6rem;letter-spacing:-0.02em;">Intel FTC States Volunteering</h3>
+        <p style="font-size:0.83rem;color:var(--gray);line-height:1.65;">Volunteered at the FTC State Championship at Intel — pit running and judging support.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section class="section" id="team-section" style="background:var(--white)">
+    <div class="reveal" style="margin-bottom:0.5rem">
+      <div class="section-eyebrow">The Team</div>
+      <h2 class="section-title">Student-Led.<br>Community-Driven.</h2>
+    </div>
+    <div class="team-grid">
+      <div class="team-card reveal">
+        <div class="team-avatar">RL</div>
+        <h4>Ryan Lee</h4>
+        <span class="team-role">Co-Founder &amp; Director</span>
+        <p class="team-bio">Junior at Westview HS with a passion for robotics and dentistry. Leads event planning and communications. Third-degree black belt and FTC hardware lead.</p>
+      </div>
+      <div class="team-card reveal reveal-d1">
+        <div class="team-avatar">DS</div>
+        <h4>Dhruv Singh</h4>
+        <span class="team-role">Co-Founder</span>
+        <p class="team-bio">Co-founded GearForward with a shared vision for making STEM education accessible to all Oregon youth.</p>
+      </div>
+      <div class="team-card reveal reveal-d2">
+        <div class="team-avatar">WZ</div>
+        <h4>Winston Zhang</h4>
+        <span class="team-role">VP of Technology &amp; Marketing</span>
+        <p class="team-bio">Rising junior at Westview HS. Enjoys tennis, basketball, and K-Dramas. Plans to study Mechanical Engineering in college.</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar">EW</div>
+        <h4>Ellen Wang</h4>
+        <span class="team-role">VP of Communications &amp; Sponsorships</span>
+        <p class="team-bio">Junior at Westview HS fascinated by biomedical engineering and how it can help those in need. Loves cafes and soccer.</p>
+      </div>
+      <div class="team-card reveal reveal-d1">
+        <div class="team-avatar">YW</div>
+        <h4>Yicheng Wang</h4>
+        <span class="team-role">Treasurer</span>
+        <p class="team-bio">Rising junior at Westview HS passionate about robotics and engineering. Hobbies include badminton and drawing.</p>
+      </div>
+      <div class="team-card reveal reveal-d2">
+        <div class="team-avatar">JM</div>
+        <h4>Jayden Mei</h4>
+        <span class="team-role">Team Member</span>
+        <p class="team-bio">A valued member of the GearForward team, contributing to our mission of expanding STEM access for Oregon youth.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="reveal">
+      <div class="section-eyebrow">Get Involved</div>
+      <h2 class="section-title">Ready to Build<br>the Future?</h2>
+      <p class="cta-sub">Student, educator, engineer, or supporter — there's a place for you at GearForward. Every contribution helps us reach one more kid.</p>
+      <div class="cta-actions">
+        <a href="#" class="btn btn-dark" data-action="page" data-arg="chapters">Join a Chapter</a>
+        <button class="btn btn-white" data-action="donate">♥ Donate</button>
+        <a href="mailto:info@gearforward.org" class="btn btn-dark">Contact Us</a>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page-home -->
+
+
+<!-- ═══════════════ PAGE: EVENTS ═══════════════ -->
+<div class="page" id="page-events">
+
+  <div class="events-hero">
+    <div class="events-header">
+      <div>
+        <div class="section-eyebrow">Events</div>
+        <h1 class="section-title text-white">What We've<br>Been Building</h1>
+        <p class="events-hero-sub">From summer robotics camps to festival booths and state championships — here's how GearForward shows up in the community.</p>
+      </div>
+      <button class="btn btn-yellow" data-action="donate">♥ Support Our Events</button>
+    </div>
+  </div>
+
+  <div class="events-list">
+    <div class="events-list-inner">
+
+      <!-- Event 1 -->
+      <div class="event-card reveal">
+        <div class="event-date-block">
+          <div>
+            <div class="event-month">Jul – Aug</div>
+            <div class="event-day">23</div>
+            <div class="event-year">2025</div>
+          </div>
+        </div>
+        <div class="event-body">
+          <div class="event-tag">🏕 Camp</div>
+          <div class="event-title">GearForward Summer Robotics Camp</div>
+          <div class="event-desc">At the Brookwood Library, we hosted a free 4-session summer camp all about robotics. Kids learned how to code, CAD, and worked with real FIRST Competition FLL Robots.</div>
+          <div class="event-meta">
+            <span>📍 Brookwood Library, Portland</span>
+            <span>📅 Jul 23 – Aug 13, 2025</span>
+            <span>🆓 Free to Attend</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event 2 -->
+      <div class="event-card reveal">
+        <div class="event-date-block">
+          <div>
+            <div class="event-month">March</div>
+            <div class="event-day">29</div>
+            <div class="event-year">2025</div>
+          </div>
+        </div>
+        <div class="event-body">
+          <div class="event-tag">🎪 Outreach</div>
+          <div class="event-title">Portland Holi Festival of Lights</div>
+          <div class="event-desc">We hosted an informational booth at the Portland Holi Festival of Lights, where festival-goers could interact with and operate a real FIRST Tech Challenge competition robot.</div>
+          <div class="event-meta">
+            <span>📍 Portland, OR</span>
+            <span>📅 March 29, 2025</span>
+            <span>🤖 Live Robot Demo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event 3 -->
+      <div class="event-card reveal">
+        <div class="event-date-block">
+          <div>
+            <div class="event-month">December</div>
+            <div class="event-day">07</div>
+            <div class="event-year">2024</div>
+          </div>
+        </div>
+        <div class="event-body">
+          <div class="event-tag">🏆 Volunteering</div>
+          <div class="event-title">Intel FTC State Championship</div>
+          <div class="event-desc">We volunteered at the FTC State Championship hosted by Intel, providing event support and assisting in various roles such as pit running and judging.</div>
+          <div class="event-meta">
+            <span>📍 Intel Campus, Oregon</span>
+            <span>📅 December 7, 2024</span>
+            <span>🙋 Pit Running &amp; Judging</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="reveal">
+      <div class="section-eyebrow">Stay Connected</div>
+      <h2 class="section-title">Don't Miss<br>What's Next</h2>
+      <p class="cta-sub">Follow along as GearForward grows — more camps, more chapters, more robots. Get involved or support us today.</p>
+      <div class="cta-actions">
+        <a href="#" class="btn btn-dark" data-action="page" data-arg="chapters">Join a Chapter</a>
+        <button class="btn btn-white" data-action="donate">♥ Donate</button>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page-events -->
+
+
+<!-- ═══════════════ PAGE: CHAPTERS ═══════════════ -->
+<div class="page" id="page-chapters">
+
+  <div class="chapters-hero">
+    <div class="section-eyebrow">Chapters</div>
+    <h1 class="section-title">Find Your<br>Chapter.</h1>
+    <p style="margin-top:1rem;color:var(--gray);font-size:1rem;max-width:480px;line-height:1.75;">GearForward has grown to include multiple chapters across Oregon. Find the one closest to you — or start a new one.</p>
+  </div>
+
+  <div class="chapters-section">
+    <div class="section-eyebrow">Active Chapters</div>
+    <h2 class="section-title">Join a Program<br>Near You</h2>
+    <div class="chapters-grid">
+
+      <div class="chapter-card reveal">
+        <div class="chapter-icon">🏫</div>
+        <div class="chapter-school">Westview High School</div>
+        <h3>Westview STEM Robotics Club</h3>
+        <p>Are you a student at Westview High School? All students planning to attend Westview in the 2025–26 school year are invited to join our STEM Robotics Club held bi-weekly after school.</p>
+        <div class="chapter-detail">Bi-weekly after school meetings</div>
+        <div class="chapter-actions">
+          <a href="#" class="btn btn-yellow btn-sm" data-action="page" data-arg="chapters">Register Here →</a>
+        </div>
+      </div>
+
+      <div class="chapter-card reveal reveal-d1">
+        <div class="chapter-icon">🚀</div>
+        <div class="chapter-school">International School of Beaverton</div>
+        <h3>Rocketry &amp; Robotics Club</h3>
+        <p>Are you a student at the International School of Beaverton (ISB)? All students planning to attend ISB in the 2025–26 school year are invited to join the Rocketry and Robotics Club.</p>
+        <div class="chapter-detail">2nd and 4th Thursdays of each month</div>
+        <div class="chapter-actions">
+          <a href="mailto:info@gearforward.org" class="btn btn-yellow btn-sm">Contact Here →</a>
+        </div>
+      </div>
+
+      <div class="chapter-card reveal reveal-d2">
+        <div class="chapter-icon">⚙️</div>
+        <div class="chapter-school">FTC Competition Team</div>
+        <h3>Gear Up FTC Team</h3>
+        <p>Are you a motivated student with a passion for robotics, engineering, or coding? Join FTC Team Gear Up and take part in an exciting, hands-on experience where you'll collaborate, innovate, and compete at a high level.</p>
+        <div class="chapter-detail">Competition season · Fall &amp; Winter</div>
+        <div class="chapter-actions">
+          <a href="mailto:info@gearforward.org" class="btn btn-yellow btn-sm">Apply Now →</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Start a chapter CTA -->
+    <div style="margin-top:3rem;background:var(--off-white);border-radius:20px;padding:2.5rem;border:1.5px dashed var(--gray-light);text-align:center;" class="reveal">
+      <div style="font-size:2rem;margin-bottom:0.8rem;">📍</div>
+      <h3 style="font-family:var(--font-display);font-weight:800;font-size:1.5rem;letter-spacing:-0.02em;margin-bottom:0.6rem;">Start a Chapter at Your School</h3>
+      <p style="font-size:0.88rem;color:var(--gray);max-width:440px;margin:0 auto 1.5rem;line-height:1.7;">Want to bring GearForward to your school or community? We provide curriculum, mentorship, and support to help new chapters get off the ground.</p>
+      <a href="mailto:info@gearforward.org" class="btn btn-yellow">Get In Touch →</a>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="reveal">
+      <div class="section-eyebrow">Support Us</div>
+      <h2 class="section-title">Fuel the<br>Next Chapter</h2>
+      <p class="cta-sub">Your donation helps fund free robotics kits, workshops, and competition registration for students across all our Oregon chapters.</p>
+      <div class="cta-actions">
+        <button class="btn btn-dark" data-action="donate">♥ Donate Now</button>
+        <a href="mailto:info@gearforward.org" class="btn btn-white">Sponsor a Chapter</a>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page-chapters -->
+
+
+<!-- ═══════════════ PAGE: TESTIMONIALS ═══════════════ -->
+<div class="page" id="page-testimonials">
+
+  <div class="testimonials-hero">
+    <div class="section-eyebrow">Testimonials</div>
+    <h1 class="section-title text-white">Heard from<br>Our Community</h1>
+    <p style="margin-top:1rem;color:rgba(255,255,255,0.5);font-size:1rem;max-width:500px;line-height:1.75;">Real words from students, parents, volunteers, and partners who've experienced GearForward firsthand.</p>
+  </div>
+
+  <!-- Featured quote -->
+  <div class="t-featured reveal">
+    <div class="t-featured-text">"Before GearForward, I had never touched a robot in my life. After just one summer camp session, I was writing code and building mechanisms I didn't think I was capable of. This program genuinely changed the way I think about what I can do."</div>
+    <div class="t-featured-author">
+      <div class="t-featured-avatar">MK</div>
+      <div>
+        <div class="t-featured-name">Maya K.</div>
+        <div class="t-featured-role">Summer Robotics Camp Participant · 2025</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Testimonial cards grid -->
+  <div class="t-section">
+    <div class="section-eyebrow">What People Are Saying</div>
+    <h2 class="section-title">Stories from<br>the Community</h2>
+
+    <div class="t-grid">
+
+      <div class="t-card reveal">
+        <div class="t-stars">⭐⭐⭐⭐⭐</div>
+        <div class="t-quote-mark">❝</div>
+        <p class="t-text">My daughter had no interest in engineering before she attended the Brookwood Library camp. Now she's talking about studying computer science. The hands-on approach and the mentors made all the difference.</p>
+        <div class="t-author">
+          <div class="t-avatar">SP</div>
+          <div>
+            <div class="t-name">Sarah P.</div>
+            <div class="t-role">Parent</div>
+            <div class="t-tag">Summer Camp 2025</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="t-card reveal reveal-d1">
+        <div class="t-stars">⭐⭐⭐⭐⭐</div>
+        <div class="t-quote-mark">❝</div>
+        <p class="t-text">Volunteering at the FTC State Championship with GearForward was one of the most rewarding experiences of my year. The team is organized, passionate, and truly committed to making robotics accessible to everyone.</p>
+        <div class="t-author">
+          <div class="t-avatar">JT</div>
+          <div>
+            <div class="t-name">James T.</div>
+            <div class="t-role">Volunteer</div>
+            <div class="t-tag">Intel FTC States 2024</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="t-card reveal reveal-d2">
+        <div class="t-stars">⭐⭐⭐⭐⭐</div>
+        <div class="t-quote-mark">❝</div>
+        <p class="t-text">Seeing kids light up when they got to drive the FTC robot at our festival was incredible. GearForward brought so much energy and enthusiasm — it was one of the highlights of the whole event.</p>
+        <div class="t-author">
+          <div class="t-avatar">LR</div>
+          <div>
+            <div class="t-name">Layla R.</div>
+            <div class="t-role">Event Organizer</div>
+            <div class="t-tag">Portland Holi Festival 2025</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="t-card reveal">
+        <div class="t-stars">⭐⭐⭐⭐⭐</div>
+        <div class="t-quote-mark">❝</div>
+        <p class="t-text">I joined the Westview STEM Robotics Club not knowing anything about CAD or coding. By the end of the semester I had designed my first part and programmed an autonomous routine. I feel prepared for engineering in college.</p>
+        <div class="t-author">
+          <div class="t-avatar">AJ</div>
+          <div>
+            <div class="t-name">Alex J.</div>
+            <div class="t-role">Student, Westview HS</div>
+            <div class="t-tag">STEM Robotics Club</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="t-card reveal reveal-d1">
+        <div class="t-stars">⭐⭐⭐⭐⭐</div>
+        <div class="t-quote-mark">❝</div>
+        <p class="t-text">As a teacher, it's rare to find an outside organization that integrates so seamlessly with students. GearForward's team is professional, genuinely caring, and their free model means no student gets left out.</p>
+        <div class="t-author">
+          <div class="t-avatar">MV</div>
+          <div>
+            <div class="t-name">Mr. Vasquez</div>
+            <div class="t-role">STEM Teacher</div>
+            <div class="t-tag">Partner School</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="t-card reveal reveal-d2">
+        <div class="t-stars">⭐⭐⭐⭐⭐</div>
+        <div class="t-quote-mark">❝</div>
+        <p class="t-text">The Gear Up FTC team is a completely different experience from anything at school. We actually build and compete. I've learned more about engineering here than in any classroom, and I've made friends who care about the same things I do.</p>
+        <div class="t-author">
+          <div class="t-avatar">NK</div>
+          <div>
+            <div class="t-name">Noor K.</div>
+            <div class="t-role">Student, Gear Up FTC</div>
+            <div class="t-tag">FTC Competition Team</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Share your story form -->
+  <div class="t-share-section">
+    <div class="t-share-inner">
+      <div class="section-eyebrow">Share Your Story</div>
+      <h2 class="section-title reveal">Have Something<br>to Say?</h2>
+      <p style="color:var(--gray);font-size:0.92rem;line-height:1.75;margin-top:0.8rem;" class="reveal">Been part of a GearForward event, chapter, or program? We'd love to hear from you. Submit your testimonial below.</p>
+
+      <div class="t-success" id="tSuccess">
+        <div class="t-success-icon">🎉</div>
+        <h3>Thank you!</h3>
+        <p>Your testimonial has been submitted. We'll review it and may feature it on this page.</p>
+      </div>
+
+      <div class="t-form reveal" id="tForm">
+        <div class="t-form-row">
+          <div>
+            <label>Your Name</label>
+            <input type="text" id="tName" placeholder="e.g. Alex Johnson"/>
+          </div>
+          <div>
+            <label>Role / Connection</label>
+            <input type="text" id="tRole" placeholder="e.g. Student, Parent, Volunteer"/>
+          </div>
+        </div>
+        <div>
+          <label>Program or Event</label>
+          <select id="tProgram">
+            <option value="">Select a program or event...</option>
+            <option>Summer Robotics Camp 2025</option>
+            <option>Portland Holi Festival 2025</option>
+            <option>Intel FTC States 2024</option>
+            <option>Westview STEM Robotics Club</option>
+            <option>ISB Rocketry &amp; Robotics Club</option>
+            <option>Gear Up FTC Team</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label>Your Testimonial</label>
+          <textarea id="tMessage" placeholder="Tell us about your experience with GearForward..."></textarea>
+        </div>
+        <button class="t-form-submit" data-action="testimonial-submit">Submit Testimonial →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="reveal">
+      <div class="section-eyebrow">Join the Story</div>
+      <h2 class="section-title">Be Part of<br>What's Next</h2>
+      <p class="cta-sub">Join a chapter, attend an event, or support our mission — and add your own story to the GearForward community.</p>
+      <div class="cta-actions">
+        <a href="#" class="btn btn-dark" data-action="page" data-arg="chapters">Get Involved</a>
+        <button class="btn btn-white" data-action="donate">♥ Donate</button>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page-testimonials -->
+
+
+<!-- ═══════════════ PAGE: MISSION ═══════════════ -->
+<div class="page" id="page-mission">
+
+  <div class="mission-page-hero">
+    <div class="section-eyebrow">Our Mission</div>
+    <h1 class="section-title">Why We<br>Exist.</h1>
+    <p style="margin-top:1rem;color:rgba(0,0,0,0.6);font-size:1rem;max-width:500px;line-height:1.75;">GearForward was built on a simple belief: access to STEM education should never depend on where you're from or what you can afford.</p>
+  </div>
+
+  <!-- Mission statement -->
+  <div class="mission-statement-section">
+    <div class="mission-statement-inner">
+      <div class="section-eyebrow reveal">Mission Statement</div>
+
+      <div class="mission-pull reveal">
+        <p>"At the core of our organization lies a mission to ensure that STEM education is accessible, inclusive, and empowering for all individuals — particularly those who have historically been marginalized or overlooked in the fields of science, technology, engineering, and mathematics."</p>
+      </div>
+
+      <p class="mission-para reveal">Our main objective is to engage students and communities that have had minimal to no exposure to STEM. Whether this is due to financial constraints or insufficient access to STEM education, we strive to aid those in these situations by developing programs and environments where every student feels welcomed, motivated, and capable of achieving success in STEM.</p>
+
+      <p class="mission-para reveal">We are actively pursuing the expansion of our reach by establishing new chapters throughout Oregon and beyond. By creating a network of student-led teams grounded in local communities, we can gain a better understanding of the specific needs of each area and customize our initiatives to maximize our impact.</p>
+
+      <p class="mission-para reveal">In addition to our outreach and educational efforts, we are dedicated to offering free resources — such as STEM kits, mentorship, and interactive workshops — to students and schools that require assistance. We firmly believe that financial constraints should never hinder the learning process. This is why we provide all our programs and materials at no cost to participants, made possible through the generosity of donors, volunteers, and partners who align with our vision.</p>
+
+      <p class="mission-para reveal">Ultimately, our aim extends beyond merely teaching; we seek to unlock opportunities. We aspire to help young individuals by connecting them with opportunities and equipping them with the tools and education necessary to pursue their aspirations. By investing in underserved communities today, we hope to inspire the diverse leaders, thinkers, and innovators of the future.</p>
+    </div>
+  </div>
+
+  <!-- Core values -->
+  <div class="mission-values">
+    <div class="reveal">
+      <div class="section-eyebrow">Core Values</div>
+      <h2 class="section-title">What Guides<br>Everything We Do</h2>
+    </div>
+    <div class="values-grid">
+      <div class="value-card reveal">
+        <div class="value-num">01</div>
+        <h3>Accessibility</h3>
+        <p>Every program, resource, and opportunity we offer is free. Financial constraints will never be a barrier to learning with GearForward.</p>
+      </div>
+      <div class="value-card reveal reveal-d1">
+        <div class="value-num">02</div>
+        <h3>Inclusion</h3>
+        <p>We build spaces where students from all backgrounds feel welcomed, capable, and seen — especially those historically underrepresented in STEM.</p>
+      </div>
+      <div class="value-card reveal reveal-d2">
+        <div class="value-num">03</div>
+        <h3>Empowerment</h3>
+        <p>We don't just teach skills — we help students discover what they're capable of and equip them with tools to pursue their own futures.</p>
+      </div>
+      <div class="value-card reveal">
+        <div class="value-num">04</div>
+        <h3>Community</h3>
+        <p>Student-led chapters mean we're grounded in the communities we serve. Local insight drives every decision we make.</p>
+      </div>
+      <div class="value-card reveal reveal-d1">
+        <div class="value-num">05</div>
+        <h3>Innovation</h3>
+        <p>Hands-on building and real competition push students to think creatively, fail fast, and keep improving — skills that last a lifetime.</p>
+      </div>
+      <div class="value-card reveal reveal-d2">
+        <div class="value-num">06</div>
+        <h3>Impact</h3>
+        <p>We measure success by the opportunities we unlock and the futures we help shape — not just the number of students we reach.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="reveal">
+      <div class="section-eyebrow">Live the Mission</div>
+      <h2 class="section-title">Ready to Make<br>a Difference?</h2>
+      <p class="cta-sub">Volunteer, donate, start a chapter, or just show up. Every contribution moves the mission forward.</p>
+      <div class="cta-actions">
+        <a href="#" class="btn btn-dark" data-action="page" data-arg="chapters">Get Involved</a>
+        <button class="btn btn-white" data-action="donate">♥ Donate</button>
+        <a href="#" class="btn btn-dark" data-action="page" data-arg="contact">Contact Us</a>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page-mission -->
+
+
+<!-- ═══════════════ PAGE: TEAM ═══════════════ -->
+<div class="page" id="page-team">
+
+  <div class="team-page-hero">
+    <div class="section-eyebrow" style="color:var(--gray);">The Team</div>
+    <h1 class="section-title">Student-Led.<br>Community-Driven.</h1>
+    <p style="margin-top:1rem;color:var(--gray);font-size:1rem;max-width:480px;line-height:1.75;">GearForward is built and run by high school students who believe every young person deserves access to STEM — and are doing something about it.</p>
+  </div>
+
+  <section style="background:var(--white);padding:5rem 5% 7rem;">
+    <div class="section-eyebrow reveal">Leadership</div>
+    <h2 class="section-title reveal" style="margin-bottom:0.5rem;">Meet the<br>People Behind It</h2>
+    <div class="team-page-grid" style="margin-top:3rem;">
+
+      <div class="team-page-card reveal">
+        <div class="team-page-avatar">RL</div>
+        <h3>Ryan Lee</h3>
+        <div class="team-page-role">Co-Founder &amp; Director</div>
+        <p class="team-page-bio">I'm a current junior at Westview High School with a strong passion for both robotics and dentistry. As a co-founder, I help lead event planning and communications for our organization. Outside of school, I'm a third-degree black belt and an active member of my FTC robotics team, where I focus on building and managing hardware systems.</p>
+      </div>
+
+      <div class="team-page-card reveal reveal-d1">
+        <div class="team-page-avatar">DS</div>
+        <h3>Dhruv Singh</h3>
+        <div class="team-page-role">Co-Founder</div>
+        <p class="team-page-bio">Co-founded GearForward alongside Ryan with a shared vision for making STEM education accessible and impactful for all Oregon youth.</p>
+      </div>
+
+      <div class="team-page-card reveal reveal-d2">
+        <div class="team-page-avatar">WZ</div>
+        <h3>Winston Zhang</h3>
+        <div class="team-page-role">VP of Technology &amp; Marketing</div>
+        <p class="team-page-bio">Hi, my name is Winston and I'm a rising junior at Westview High School. My typical hobbies are playing tennis and basketball and I enjoy watching K-Dramas. During college, I plan to study Mechanical Engineering.</p>
+      </div>
+
+      <div class="team-page-card reveal">
+        <div class="team-page-avatar">EW</div>
+        <h3>Ellen Wang</h3>
+        <div class="team-page-role">VP of Communications &amp; Sponsorships</div>
+        <p class="team-page-bio">Hi I'm Ellen and I'm a junior at Westview High School. My fascination lies in biomedical engineering and how these innovations can be leveraged to help those in need. Outside of academics, you can find me out exploring new cafes or staying active through soccer.</p>
+      </div>
+
+      <div class="team-page-card reveal reveal-d1">
+        <div class="team-page-avatar">YW</div>
+        <h3>Yicheng Wang</h3>
+        <div class="team-page-role">Treasurer</div>
+        <p class="team-page-bio">Hi my name is Yicheng and I'm a rising junior at Westview High School. I'm passionate about robotics and I plan to study engineering in college. My hobbies are playing badminton and drawing.</p>
+      </div>
+
+      <div class="team-page-card reveal reveal-d2">
+        <div class="team-page-avatar">JM</div>
+        <h3>Jayden Mei</h3>
+        <div class="team-page-role">Team Member</div>
+        <p class="team-page-bio">A valued member of the GearForward team, contributing to our mission of expanding STEM access for youth across Oregon.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="reveal">
+      <div class="section-eyebrow">Join the Team</div>
+      <h2 class="section-title">Want to Get<br>Involved?</h2>
+      <p class="cta-sub">We're always looking for passionate students, mentors, and volunteers. Reach out and become part of what we're building.</p>
+      <div class="cta-actions">
+        <a href="#" class="btn btn-dark" data-action="page" data-arg="contact">Contact Us</a>
+        <button class="btn btn-white" data-action="donate">♥ Donate</button>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page-team -->
+
+
+<!-- ═══════════════ PAGE: CONTACT ═══════════════ -->
+<div class="page" id="page-contact">
+
+  <div class="contact-hero">
+    <div class="section-eyebrow">Contact</div>
+    <h1 class="section-title text-white">Let's Connect.</h1>
+    <p style="margin-top:1rem;color:rgba(255,255,255,0.5);font-size:1rem;max-width:460px;line-height:1.75;">Whether you want to start a chapter, sponsor a program, volunteer, or just learn more — we'd love to hear from you.</p>
+  </div>
+
+  <div class="contact-body">
+    <div class="contact-grid">
+
+      <!-- Info column -->
+      <div class="contact-info reveal">
+        <div>
+          <div class="section-eyebrow">Get in Touch</div>
+          <h2 class="section-title" style="font-size:2rem;">We're Here<br>for You.</h2>
+          <p style="margin-top:1rem;font-size:0.9rem;color:var(--gray);line-height:1.75;">Have a question, partnership idea, or just want to say hi? Drop us a message and we'll get back to you as soon as we can.</p>
+        </div>
+
+        <div class="contact-info-item">
+          <div class="contact-info-icon">📧</div>
+          <div>
+            <div class="contact-info-label">Email</div>
+            <div class="contact-info-value"><a href="mailto:info@gearforward.org">info@gearforward.org</a></div>
+          </div>
+        </div>
+
+        <div class="contact-info-item">
+          <div class="contact-info-icon">📍</div>
+          <div>
+            <div class="contact-info-label">Based In</div>
+            <div class="contact-info-value">Portland / Bethany, Oregon</div>
+          </div>
+        </div>
+
+        <div class="contact-info-item">
+          <div class="contact-info-icon">🏫</div>
+          <div>
+            <div class="contact-info-label">Home Chapter</div>
+            <div class="contact-info-value">Westview High School</div>
+          </div>
+        </div>
+
+        <div class="contact-info-item">
+          <div class="contact-info-icon">⚖️</div>
+          <div>
+            <div class="contact-info-label">Legal Status</div>
+            <div class="contact-info-value">501(c)(3) Nonprofit Organization</div>
+          </div>
+        </div>
+
+        <div style="background:var(--yellow-pale);border-radius:16px;padding:1.5rem;border:1px solid rgba(245,168,0,0.25);">
+          <div style="font-family:var(--font-display);font-weight:800;font-size:1rem;margin-bottom:0.4rem;">Want to sponsor or partner?</div>
+          <p style="font-size:0.82rem;color:var(--gray);line-height:1.6;">Corporate sponsors and community partners directly fund free robotics programs for Oregon youth. All sponsorships are tax-deductible.</p>
+          <button data-action="donate" style="margin-top:1rem;background:var(--yellow);border:none;border-radius:100px;padding:0.55rem 1.3rem;font-family:var(--font-display);font-weight:700;font-size:0.88rem;cursor:pointer;transition:transform 0.2s;"  >♥ Donate Now</button>
+        </div>
+      </div>
+
+      <!-- Contact form -->
+      <div class="contact-form reveal reveal-d1">
+        <h3>Send Us a Message</h3>
+        <p class="form-sub">Fill out the form below and we'll get back to you within a few days.</p>
+
+        <div class="cf-success" id="cfSuccess">
+          <div class="cf-success-icon">🚀</div>
+          <h3>Message Sent!</h3>
+          <p>Thanks for reaching out. We'll reply as soon as we can — usually within 2–3 days.</p>
+        </div>
+
+        <div id="cfForm">
+          <div class="cf-row">
+            <div class="cf-field">
+              <label class="cf-label">First Name</label>
+              <input class="cf-input" type="text" id="cfFirst" placeholder="Alex"/>
+            </div>
+            <div class="cf-field">
+              <label class="cf-label">Last Name</label>
+              <input class="cf-input" type="text" id="cfLast" placeholder="Johnson"/>
+            </div>
+          </div>
+          <div class="cf-field">
+            <label class="cf-label">Email Address</label>
+            <input class="cf-input" type="email" id="cfEmail" placeholder="alex@example.com"/>
+          </div>
+          <div class="cf-field">
+            <label class="cf-label">I'm reaching out as a...</label>
+            <select class="cf-select" id="cfType">
+              <option value="">Select one...</option>
+              <option>Student interested in joining</option>
+              <option>Parent / Guardian</option>
+              <option>Teacher or School Administrator</option>
+              <option>Volunteer</option>
+              <option>Potential Sponsor or Partner</option>
+              <option>Press / Media</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="cf-field">
+            <label class="cf-label">Message</label>
+            <textarea class="cf-textarea" id="cfMessage" placeholder="Tell us what's on your mind..."></textarea>
+          </div>
+          <button class="cf-submit" data-action="contact-submit">Send Message →</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page-contact -->
+
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="footer-brand">
+    <img src="data:image/jpeg;base64,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" width="26" height="26" alt="GearForward logo" style="object-fit:contain;">
+    <span class="footer-wordmark">GEAR<span>FORWARD</span></span>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#" data-action="page" data-arg="home">Home</a></li>
+    <li><a href="#" data-action="page" data-arg="team">Team</a></li>
+    <li><a href="#" data-action="page" data-arg="mission">Mission</a></li>
+    <li><a href="#" data-action="page" data-arg="events">Events</a></li>
+    <li><a href="#" data-action="page" data-arg="chapters">Chapters</a></li>
+    <li><a href="#" data-action="page" data-arg="testimonials">Testimonials</a></li>
+    <li><a href="#" data-action="page" data-arg="contact">Contact</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 GearForward · 501(c)(3) · Portland, OR</span>
+</footer>
+
+<script>
+(function() {
+  // ── PAGE ROUTING ──
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    var pg = document.getElementById('page-' + name);
+    if (pg) pg.classList.add('active');
+    document.querySelectorAll('.nav-links a[data-page]').forEach(function(a) {
+      a.classList.toggle('active', a.getAttribute('data-page') === name);
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(initReveals, 100);
+  }
+
+  function scrollToId(id) {
+    setTimeout(function() {
+      var el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 200);
+  }
+
+  // ── MOBILE MENU ──
+  function toggleMenu() {
+    var hb = document.getElementById('hamburger');
+    var mm = document.getElementById('mobileMenu');
+    hb.classList.toggle('open');
+    mm.classList.toggle('open');
+    document.body.style.overflow = mm.classList.contains('open') ? 'hidden' : '';
+  }
+
+  // ── DONATE MODAL ──
+  function openDonate() {
+    document.getElementById('donateModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDonate() {
+    document.getElementById('donateModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function selectAmount(btn) {
+    document.querySelectorAll('.amount-btn').forEach(function(b) { b.classList.remove('selected'); });
+    btn.classList.add('selected');
+    document.getElementById('customAmount').value = '';
+  }
+  function handleDonate() {
+    var selected = document.querySelector('.amount-btn.selected');
+    var custom = document.getElementById('customAmount').value;
+    var amount = custom || (selected ? selected.textContent.replace('$','') : '');
+    if (!amount) { alert('Please select or enter an amount.'); return; }
+    alert('Thank you! This would redirect to a secure payment processor.\n\nAmount: $' + amount);
+    closeDonate();
+  }
+
+  // ── FORMS ──
+  function submitContact() {
+    var first = document.getElementById('cfFirst').value.trim();
+    var email = document.getElementById('cfEmail').value.trim();
+    var msg = document.getElementById('cfMessage').value.trim();
+    if (!first || !email || !msg) { alert('Please fill in your name, email, and message.'); return; }
+    document.getElementById('cfForm').style.display = 'none';
+    document.getElementById('cfSuccess').classList.add('show');
+  }
+  function submitTestimonial() {
+    var name = document.getElementById('tName').value.trim();
+    var msg = document.getElementById('tMessage').value.trim();
+    if (!name || !msg) { alert('Please fill in your name and testimonial.'); return; }
+    document.getElementById('tForm').style.display = 'none';
+    document.getElementById('tSuccess').classList.add('show');
+  }
+
+  // ── SCROLL REVEAL ──
+  function initReveals() {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e, i) {
+        if (e.isIntersecting) setTimeout(function(){ e.target.classList.add('visible'); }, i * 70);
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal:not(.visible)').forEach(el => obs.observe(el));
+  }
+
+  // ── EVENT DELEGATION — replaces all inline onclick= ──
+  document.addEventListener('DOMContentLoaded', function() {
+    initReveals();
+
+    // Delegate all clicks on [data-action] elements
+    document.addEventListener('click', function(e) {
+      var t = e.target.closest('[data-action]');
+      if (!t) return;
+      e.preventDefault();
+      var action = t.getAttribute('data-action');
+      var arg = t.getAttribute('data-arg') || '';
+
+      if (action === 'page')       { showPage(arg); }
+      if (action === 'page-scroll'){ showPage(arg.split(':')[0]); scrollToId(arg.split(':')[1]); }
+      if (action === 'menu')       { toggleMenu(); }
+      if (action === 'page-menu')  { showPage(arg); toggleMenu(); }
+      if (action === 'donate')     { openDonate(); }
+      if (action === 'donate-menu'){ openDonate(); toggleMenu(); }
+      if (action === 'close-donate'){ closeDonate(); }
+      if (action === 'modal-outside'){ if(e.target===document.getElementById('donateModal')) closeDonate(); }
+      if (action === 'amount')     { selectAmount(t); }
+      if (action === 'custom-amount'){ document.querySelectorAll('.amount-btn').forEach(function(b){b.classList.remove('selected');}); }
+      if (action === 'donate-submit'){ handleDonate(); }
+      if (action === 'contact-submit'){ submitContact(); }
+      if (action === 'testimonial-submit'){ submitTestimonial(); }
+    });
+
+    // Modal overlay click-outside
+    var overlay = document.getElementById('donateModal');
+    if (overlay) overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) closeDonate();
+    });
+
+    // Resize handler
+    window.addEventListener('resize', function() {
+      if (window.innerWidth > 768) {
+        var mm = document.getElementById('mobileMenu');
+        var hb = document.getElementById('hamburger');
+        if (mm) mm.classList.remove('open');
+        if (hb) hb.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+
+})();
+</script>
+</body>
+</html>
